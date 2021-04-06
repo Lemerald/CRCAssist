@@ -1,0 +1,66 @@
+/*NAudio.Wave.WaveStream pcm = NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(new NAudio.Wave.Mp3FileReader(transitionP));
+            stream = new NAudio.Wave.BlockAlignReductionStream(pcm);
+            output = new NAudio.Wave.DirectSoundOut();
+            output.Init(stream);
+            output.Play();
+            Thread.Sleep((int)new AudioFileReader(transitionP).TotalTime.TotalMilliseconds);
+            pcm = NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(new NAudio.Wave.Mp3FileReader(crcP));
+            stream = new NAudio.Wave.BlockAlignReductionStream(pcm);
+            output.Init(stream);
+            output.Play();*/
+
+
+
+/*DisposeWave();
+                NAudio.Wave.WaveStream pcm = NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(new NAudio.Wave.Mp3FileReader(playlist.First()));
+                stream = new NAudio.Wave.BlockAlignReductionStream(pcm);
+                output = new NAudio.Wave.DirectSoundOut();
+                output.Init(stream);
+                output.Play();*/
+
+
+
+/*AudioFileReader crcAFR = new AudioFileReader(crcP);
+            int crcD = (int)crcAFR.TotalTime.TotalMilliseconds;
+            AudioFileReader kickAFR = new AudioFileReader(kickP);
+            int kickD = (int)kickAFR.TotalTime.TotalMilliseconds;
+            AudioFileReader snareAFR = new AudioFileReader(snareP);
+            int snareD = (int)snareAFR.TotalTime.TotalMilliseconds;
+            AudioFileReader transitionAFR = new AudioFileReader(transitionP);
+            int transitionD = (int)transitionAFR.TotalTime.TotalMilliseconds;
+            AudioFileReader warmupAFR = new AudioFileReader(warmupP);
+            int warmupD = (int)warmupAFR.TotalTime.TotalMilliseconds;
+
+
+            void crc() { wod.Stop(); wod.Init(crcAFR); wod.Play(); }
+            void kick() { wod.Stop(); wod.Init(kickAFR); wod.Play(); }
+            void snare() { wod.Stop(); wod.Init(snareAFR); wod.Play(); }
+            void transition() { wod.Stop(); wod.Init(transitionAFR); wod.Play(); }
+            void warmup() { wod.Stop(); wod.Init(warmupAFR); wod.Play(); }*/
+            //Play the warmup sound
+            /*if (!GetstartInstantly()) { warmup(); Thread.Sleep(warmupD); }
+            //Add the GP beats
+            for (int i = 0; i < Getgps(); i++)
+            {
+                //3 kicks
+                for (int k = 0; k < 3; k++) { kick(); Thread.Sleep(kickD); }
+                //1 snare
+                snare();
+                Thread.Sleep(snareD);
+            }
+            //If the transition checkbox is checked
+            if (Gettransition())
+            {
+                //Play the transition sound
+                transition();
+                Thread.Sleep(transitionD);
+                //Play the CRC beat for the given amount
+                for (int i = 0; i < Getloops(); i++) { crc(); Thread.Sleep(crcD); }
+            }*/
+
+            //Disposing stuff
+            /*crcAFR.Dispose();
+            kickAFR.Dispose();
+            snareAFR.Dispose();
+            transitionAFR.Dispose();
+            warmupAFR.Dispose();*/

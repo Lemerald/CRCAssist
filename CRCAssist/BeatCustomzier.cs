@@ -19,46 +19,142 @@ namespace CRCAssist
     {
 
         //Vars with getters and setters
-        private int gps;
+        private int gps { get; set; }
 
-        private int loops;
+        private int loops { get; set; }
 
-        private float beatDelay;
+        private int soundDelay { get; set; }
 
-        private bool startInstantly;
+        private float beatDelay { get; set; }
 
-        private bool transition;
+        private bool startInstantly { get; set; }
 
-        public String debug = "debug";
+        private bool transition { get; set; }
+
+        private bool secs { get; set; }
 
         public CRCAssist()
         {
             InitializeComponent();
-            Setgps(54);
-            Setloops(0);
-            SetbeatDelay(2.0f);
-            SetstartInstantly(false);
-            Settransition(false);
+            gps = 54;
+            loops = 0;
+            soundDelay = -16;
+            beatDelay = 2.0f;
+            startInstantly = false;
+            transition = false;
         }
 
+        //Important events
+        //Beatmaker events
         private void btnCreate_Click(object sender, EventArgs e)
         {
-            String output = Getgps() + "; " + GetbeatDelay() +"; " + GetstartInstantly() + "; " + Gettransition() + "; " + Getloops();
-            lblOutput.Text = output;
-            playSounds();
+            playGPbeat();
         }
 
-        public void playSound(string file)
+        private void btnCRC_Click(object sender, EventArgs e)
         {
-            NAudio.Wave.WaveStream pcm = NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(new NAudio.Wave.Mp3FileReader(file));
-            BlockAlignReductionStream stream = new NAudio.Wave.BlockAlignReductionStream(pcm);
-            DirectSoundOut output = new NAudio.Wave.DirectSoundOut();
-            output.Init(stream);
-            output.Play();
-            Sleep(((int)new AudioFileReader(file).TotalTime.TotalMilliseconds)-6);
+            playCRCbeat();
         }
 
-        public Queue<String> makePlaylist(string[] soundFiles)
+        //Settings events
+        private void pbSettings_Click(object sender, EventArgs e)
+        {
+            this.Controls.Remove(this.pnlBeatmaker);
+            this.Controls.Remove(this.pnlMore);
+            this.Controls.Add(this.pnlSettings);
+        }
+
+        private void btnStOK_Click(object sender, EventArgs e)
+        {
+            soundDelay = (int)nudSoundDelay.Value;
+            this.Controls.Remove(this.pnlSettings);
+            this.Controls.Add(this.pnlBeatmaker);
+        }
+
+        private void btnStApply_Click(object sender, EventArgs e)
+        {
+            soundDelay = (int)nudSoundDelay.Value;
+        }
+
+        private void btnStCancel_Click(object sender, EventArgs e)
+        {
+            this.Controls.Remove(this.pnlSettings);
+            this.Controls.Add(this.pnlBeatmaker);
+        }
+
+        //"More" events
+        private void pbMore_Click(object sender, EventArgs e)
+        {
+            this.Controls.Remove(this.pnlBeatmaker);
+            this.Controls.Remove(this.pnlSettings);
+            this.Controls.Add(this.pnlMore);
+
+        }
+        private void nudMSecs_ValueChanged(object sender, EventArgs e)
+        {
+            if (secs) { nudMGPs.Value = secondsToGPs((int)nudMSecs.Value); }
+        }
+        private void nudMSecs_Enter(object sender, EventArgs e)
+        {
+            secs = true;
+        }
+        private void nudMSecs_Leave(object sender, EventArgs e)
+        {
+            if (secs) { nudMGPs.Value = secondsToGPs((int)nudMSecs.Value); }
+        }
+
+        private void nudMGPs_ValueChanged(object sender, EventArgs e)
+        {
+            if (!secs) { nudMSecs.Value = gpsToSeconds((int)nudMGPs.Value); }
+        }
+        private void nudMGPs_Enter(object sender, EventArgs e)
+        {
+            secs = false;
+        }
+        private void nudMGPs_Leave(object sender, EventArgs e)
+        {
+            if (!secs) { nudMSecs.Value = gpsToSeconds((int)nudMGPs.Value); }
+        }
+
+        private void btnMBack_Click(object sender, EventArgs e)
+        {
+            this.Controls.Remove(this.pnlMore);
+            this.Controls.Add(this.pnlBeatmaker);
+        }
+
+        //Beatmaking methods
+        public void playGPbeat()
+        {
+            //Store files into soundFiles and sort them by name
+            string exePath = System.AppDomain.CurrentDomain.BaseDirectory;
+            string soundPath = Path.GetFullPath(Path.Combine(exePath, @".\Soundfiles"));
+            string[] soundFiles = Directory.GetFiles(soundPath);
+            soundFiles.OrderBy(f => f);
+            Queue<String> playlist = makeGPplaylist(soundFiles);
+            while (playlist.Count > 0)
+            {
+                playSound(playlist.First());
+                playlist.Dequeue();
+            }
+
+        }
+
+        public void playCRCbeat()
+        {
+            //Store files into soundFiles and sort them by name
+            string exePath = System.AppDomain.CurrentDomain.BaseDirectory;
+            string soundPath = Path.GetFullPath(Path.Combine(exePath, @".\Soundfiles"));
+            string[] soundFiles = Directory.GetFiles(soundPath);
+            soundFiles.OrderBy(f => f);
+            Queue<String> playlist = makeCRCplaylist(soundFiles);
+            while (playlist.Count > 0)
+            {
+                playSound(playlist.First());
+                playlist.Dequeue();
+            }
+        }
+
+        public Queue<String> makeGPplaylist(string[] soundFiles)
         {
             //Easier access to each file
             string crcP = soundFiles[0];
@@ -76,44 +172,78 @@ namespace CRCAssist
             //Select the correct gp beat speed
             string oneGpP = oneGpEasyP;
             string warmupP = warmupEasyP;
-            if (GetbeatDelay() == 1.8f) { oneGpP = oneGpExactP; warmupP = warmupExactP; }
-            else if (GetbeatDelay() == 1.9f) { oneGpP = oneGpFastP; warmupP = warmupFastP; }
+            if (beatDelay == 1.8f) { oneGpP = oneGpExactP; warmupP = warmupExactP; }
+            else if (beatDelay == 1.9f) { oneGpP = oneGpFastP; warmupP = warmupFastP; }
             //Fill playlist
             //Only play the warmup if the checkbox isn't checked
-            if (!GetstartInstantly()) { playlist.Enqueue(warmupP); }
+            if (!startInstantly) { playlist.Enqueue(warmupP); }
             //Add the GP beat the requested amount of times
-            for (int i = Gettransition() ? 1 : 0; i < Getgps(); i++) { playlist.Enqueue(oneGpP); }
+            //For-loop starts at 1 because if it transitions into a CRC beat there will be an additional snare hit
+            //And if it won't transition there will nevertheless be another snare hit at the end
+            for (int i =1; i < gps; i++) { playlist.Enqueue(oneGpP); }
             //Only necessary if the beat should transition into a CRC beat
-            if (Gettransition())
+            if (transition)
             {
                 //Add the transition sound
                 playlist.Enqueue(transitionP);
                 //Add the amount of CRC loops
-                for (int i = 0; i < Getloops(); i++) { playlist.Enqueue(crcP); }
+                for (int i = 0; i < loops; i++) { playlist.Enqueue(crcP); }
                 //Add a final snare sound;
-                playlist.Enqueue(smashP);
             }
+            playlist.Enqueue(smashP);
 
             return playlist;
         }
 
-        public void playSounds()
+        public Queue<String> makeCRCplaylist(string[] soundFiles)
         {
-            //Store files into soundFiles and sort them by name
-            string exePath = System.AppDomain.CurrentDomain.BaseDirectory;
-            string soundPath = Path.GetFullPath(Path.Combine(exePath, @"..\..\..\..\..\soundFiles"));
-            string[] soundFiles = Directory.GetFiles(soundPath);
-            soundFiles.OrderBy(f => f);
-            Queue<String> playlist = makePlaylist(soundFiles);
-            while(playlist.Count > 0)
-            {
-                playSound(playlist.First());
-                playlist.Dequeue();
-            }
-            
+            //Easier access to each file
+            string crcP = soundFiles[0];
+            string smashP = soundFiles[4];
+            string transitionP = soundFiles[5];
+
+            //Create a playlist
+            Queue<String> playlist = new Queue<string>();
+            //Select the correct gp beat speed
+            //Fill playlist
+            //Add the transition sound
+            playlist.Enqueue(transitionP);
+            //Add the amount of CRC loops
+            for (int i = 0; i < loops; i++) { playlist.Enqueue(crcP); }
+            //Add a final snare sound;
+            playlist.Enqueue(smashP);
+
+            return playlist;
         }
 
-        //Accurate sleep method
+        public void playSound(string file)
+        {
+            NAudio.Wave.WaveStream pcm = NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(new NAudio.Wave.Mp3FileReader(file));
+            BlockAlignReductionStream stream = new NAudio.Wave.BlockAlignReductionStream(pcm);
+            DirectSoundOut output = new NAudio.Wave.DirectSoundOut();
+            output.Init(stream);
+            output.Play();
+            Thread.Sleep(((int)new AudioFileReader(file).TotalTime.TotalMilliseconds)+soundDelay);
+        }
+
+        //Conversion methods
+        public int gpsToSeconds(int gps)
+        {
+            return (int)Math.Round(gps * 1.8);
+        }
+
+        public int secondsToGPs(int seconds)
+        {
+            return (int)Math.Ceiling(seconds / 1.8);
+        }
+        private void btnMApply_Click(object sender, EventArgs e)
+        {
+            if(nudMGPs.Value > 0) { nudGp.Value = nudMGPs.Value; }
+            this.Controls.Remove(this.pnlMore);
+            this.Controls.Add(this.pnlBeatmaker);
+        }
+
+        //More accurate sleep method (maybe)
         public void Sleep(double milliseconds)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -128,94 +258,44 @@ namespace CRCAssist
             stopwatch.Stop();
         }
 
-        //Events
+
+        //General events
         private void nudGp_ValueChanged(object sender, EventArgs e)
         {
-            Setgps((int)nudGp.Value);
+            gps = (int)nudGp.Value;
         }
 
         private void rbExact_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbExact.Checked) SetbeatDelay(1.8f);
+            if (rbExact.Checked) beatDelay = 1.8f;
         }
 
         private void rbFast_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbFast.Checked) SetbeatDelay(1.9f);
+            if (rbFast.Checked) beatDelay = 1.9f;
         }
 
         private void rbEasy_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbEasy.Checked) SetbeatDelay(2.0f);
+            if (rbEasy.Checked) beatDelay = 2.0f;
         }
 
         private void cbInstant_CheckedChanged(object sender, EventArgs e)
         {
-            SetstartInstantly(cbInstant.Checked);
+            startInstantly = cbInstant.Checked;
         }
 
         private void cbTransition_CheckedChanged(object sender, EventArgs e)
         {
-            Settransition(cbTransition.Checked);
+            transition = cbTransition.Checked;
+            if (cbTransition.Checked) { nudLoops.Enabled = true; lblLoops.ForeColor = Color.Black; }
+            else { nudLoops.Enabled = false; lblLoops.ForeColor = Color.Gray; }
         }
 
         private void nudLoops_ValueChanged(object sender, EventArgs e)
         {
-            Setloops(Gettransition() ? (int)nudLoops.Value : 0);
+            loops = (int)nudLoops.Value;
         }
 
-
-
-
-        //Getter and Setter
-        public int Getgps()
-        {
-            return gps;
-        }
-
-        public void Setgps(int value)
-        {
-            gps = value;
-        }
-
-        private int Getloops()
-        {
-            return loops;
-        }
-
-        private void Setloops(int value)
-        {
-            loops = value;
-        }
-
-        private float GetbeatDelay()
-        {
-            return beatDelay;
-        }
-
-        private void SetbeatDelay(float value)
-        {
-            beatDelay = value;
-        }
-
-        private bool GetstartInstantly()
-        {
-            return startInstantly;
-        }
-
-        private void SetstartInstantly(bool value)
-        {
-            startInstantly = value;
-        }
-
-        private bool Gettransition()
-        {
-            return transition;
-        }
-
-        private void Settransition(bool value)
-        {
-            transition = value;
-        }
     }
 }

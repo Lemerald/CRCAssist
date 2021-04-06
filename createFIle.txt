@@ -1,0 +1,59 @@
+/*public string[] fileArray()
+        {
+            //Store files into soundFiles and sort them by name
+            string exePath = System.AppDomain.CurrentDomain.BaseDirectory;
+            string soundPath = Path.GetFullPath(Path.Combine(exePath, @"..\soundFiles"));
+            string[] soundFiles = Directory.GetFiles(soundPath);
+            soundFiles.OrderBy(f => f);
+            //Paths to the soundfiles are stored in the correct order and quantity in "files" which will be used in Combine()
+            int length = (Getgps()) + (Getloops()) + (GetstartInstantly() ? 0 : 1) + (Gettransition() ? 1 : 0);
+            string[] files = new string[length];
+            int index = 0;
+            //Add the warmup sound
+            if (!GetstartInstantly())
+            {
+                files[index] = soundFiles[4];
+                index++;
+            }
+            //Add the GP beats
+            for(int i=0; i<Getgps(); i++)
+            {
+                //3 kicks
+                for(int k=0; k<3; k++)
+                {
+                    files[index] = soundFiles[1];
+                    index++;
+                }
+                //1 snare
+                files[index] = soundFiles[2];
+                index++;
+            }
+            if (Gettransition())
+            {
+                files[index] = soundFiles[3];
+                index++;
+                for(int i=0; i<Getloops(); i++)
+                {
+                    files[index] = soundFiles[0];
+                    index++;
+                }
+            }
+            return files;
+        }
+
+        public void Combine(string[] inputFiles, Stream output)
+        {
+            foreach (string file in inputFiles)
+            {
+                Mp3FileReader reader = new Mp3FileReader(file);
+                if ((output.Position == 0) && (reader.Id3v2Tag != null))
+                {
+                    output.Write(reader.Id3v2Tag.RawData, 0, reader.Id3v2Tag.RawData.Length);
+                }
+                Mp3Frame frame;
+                while ((frame = reader.ReadNextFrame()) != null)
+                {
+                    output.Write(frame.RawData, 0, frame.RawData.Length);
+                }
+            }
+        }*/
